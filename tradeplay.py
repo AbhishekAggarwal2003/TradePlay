@@ -119,8 +119,7 @@ def stocks():
 @app.route('/get-stock-symbols')
 def get_stock_symbols():
     try:
-        # Replace 'YOUR_API_ENDPOINT' with the actual endpoint of your API
-        response = requests.get('https://api.polygon.io/v3/reference/tickers?active=true&apiKey=onNX6t8vQlxkS8WNPpr1ExYEGNCkiyvl')
+        response = requests.get('https://api.polygon.io/v3/reference/tickers?market=stocks&active=true&limit=1000&apiKey=onNX6t8vQlxkS8WNPpr1ExYEGNCkiyvl')
         if response.status_code == 200:
             data = response.json()
             symbols = [result['ticker'] for result in data['results']]
@@ -129,9 +128,6 @@ def get_stock_symbols():
             return jsonify({'error': 'Failed to fetch stock symbols from API'}), 500
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
-
-
 
 
 # Route for user registration
