@@ -6,23 +6,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stocks Page</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='stocks.css') }}">
 </head>
 <body>
     {% include 'dashboard.html' %}
-    <h1>Real-Time Stock Data</h1>
-    <form action="{{ url_for('stocks') }}" method="post">
-        <label for="stock_symbol">Select a stock:</label>
-        <select id="stock_symbol" name="stock_symbol">
-            {% for symbol in symbols %}
-                <option value="{{ symbol }}">{{ symbol }}</option>
-            {% endfor %}
+    <h1>Stocks Page</h1>
+    <p>Select a stock to view its data:</p>
+    <form action="/stocks" method="post">
+        <select name="symbol">
+            <option value="AAPL">Apple Inc. (AAPL)</option>
+            <option value="GOOGL">Alphabet Inc. (GOOGL)</option>
+            <option value="MSFT">Microsoft Corporation (MSFT)</option>
+            <!-- Add more options as needed -->
         </select>
         <button type="submit">Show Stock Data</button>
     </form>
     <hr>
     {% if data %}
-        <h1>Stock Data for {{ symbol }}</h1>
+        <h2>Stock Data for {{ symbol }}</h2>
         <table>
             <thead>
                 <tr>
@@ -35,20 +35,20 @@
                 </tr>
             </thead>
             <tbody>
-                {% for timestamp, values in data['Time Series (60min)'].items() %}
+                {% for item in data['results'] %}
                     <tr>
-                        <td>{{ timestamp }}</td>
-                        <td>{{ values['1. open'] }}</td>
-                        <td>{{ values['2. high'] }}</td>
-                        <td>{{ values['3. low'] }}</td>
-                        <td>{{ values['4. close'] }}</td>
-                        <td>{{ values['5. volume'] }}</td>
+                        <td>{{ item['t'] }}</td>
+                        <td>{{ item['o'] }}</td>
+                        <td>{{ item['h'] }}</td>
+                        <td>{{ item['l'] }}</td>
+                        <td>{{ item['c'] }}</td>
+                        <td>{{ item['v'] }}</td>
                     </tr>
                 {% endfor %}
             </tbody>
         </table>
     {% else %}
-        <p>Failed to fetch stock data</p>
+        <p>No data available.</p>
     {% endif %}
 </body>
 </html>

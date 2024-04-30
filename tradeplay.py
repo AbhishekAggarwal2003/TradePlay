@@ -7,8 +7,8 @@ import requests
 app = Flask(__name__)
 app.secret_key = 'your_secret_key' 
  
-# Define your Alpha Vantage API key
-API_KEY = "1N4LDKMMHHAA2PBJ"
+# Define your Polygon API key
+API_KEY = "onNX6t8vQlxkS8WNPpr1ExYEGNCkiyvl"
 
 # MySQL database setup
 conn = mysql.connector.connect(
@@ -83,34 +83,23 @@ def index():
 
 
 # Function to fetch stock data
-def fetch_stock_data(symbol, function="TIME_SERIES_INTRADAY", interval="60min", outputsize="compact"):
-    url = f"https://www.alphavantage.co/query?function={function}&symbol={symbol}&apikey={API_KEY}&outputsize={outputsize}&interval={interval}"
+def fetch_stock_data(symbol):
+    url = f"https://api.polygon.io/v2/aggs/ticker/{symbol}/range/5/minute/2024-04-29/2024-04-29?adjusted=true&apiKey={API_KEY}"
     response = requests.get(url)
     if response.status_code == 200:
         return response.json()
     else:
-        print(f"Error: {response.status_code}")
         return None
 
 # Route for the stocks page
 @app.route('/stocks', methods=['GET', 'POST'])
 def stocks():
     if request.method == 'POST':
-        # Get the selected stock symbol from the form
-        symbol = request.form['stock_symbol']
-        # Fetch stock data for the selected symbol
+        symbol = request.form['symbol']
         data = fetch_stock_data(symbol)
-        if data:
-            # Pass the symbol and data to the template
-            return render_template('stocks.html', symbol=symbol, data=data)
-        else:
-            return render_template('stocks.html', error="Failed to fetch stock data")
-
-    # If it's a GET request or if there's an error, render the stocks page without data
-    return render_template('stocks.html', symbols=["AAPL", "GOOGL", "MSFT", "AMZN"])  # Example list of stock symbols
-
-
-
+        return render_template('stocks.html', symbol=symbol, data=data)
+    else:
+        return render_template('stocks.html')
 
 
 # Route for user registration
