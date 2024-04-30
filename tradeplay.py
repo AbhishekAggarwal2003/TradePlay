@@ -240,7 +240,7 @@ def buy_sell():
                 raise Exception(f"Unable to fetch stock price for symbol {symbol}")
 
             # Fetch user's balance
-            #cursor.execute('SELECT balance FROM portfolio WHERE username = %s', (username,))
+            #cursor.execute('SELECT balance FROM users WHERE username = %s', (username,))
             #balance = cursor.fetchone()[0]
 
             # Calculate transaction value
@@ -251,13 +251,22 @@ def buy_sell():
                 #if balance < transaction_value:
                     #return render_template('buy_sell.html', error='Insufficient balance')
 
-                # Update balance and portfolio table for buy action
+                # Check if the user already has this share in the portfolio
+                cursor.execute('SELECT * FROM portfolio WHERE username = %s AND stock = %s', (username, symbol))
+                existing_row = cursor.fetchone()
+
+                if existing_row:
+                    # Update the existing row in the portfolio table
+                    cursor.execute('UPDATE portfolio SET quantity = quantity + %s, total_value = total_value + %s WHERE username = %s AND stock = %s',
+                                   (quantity, transaction_value, username, symbol))
+                else:
+                    # Insert a new row in the portfolio table
+                    cursor.execute('INSERT INTO portfolio (username, stock, quantity, price, total_value, action) VALUES (%s, %s, %s, %s, %s, %s)',
+                                   (username, symbol, quantity, stock_price, transaction_value, action))
+
+                # Update user's balance
                 #new_balance = balance - transaction_value
-                #print(new_balance)
-                print(username)
-                #cursor.execute('UPDATE portfolio SET balance = %s WHERE username = %s', (new_balance, username))
-                cursor.execute('INSERT INTO portfolio (username, stock, quantity, price, total_value, action) VALUES (%s, %s, %s, %s, %s, %s)',
-                               (username, symbol, quantity, stock_price, transaction_value, action))
+                #cursor.execute('UPDATE users SET balance = %s WHERE username = %s', (new_balance, username))
                 conn.commit()
 
             elif action == 'sell':
@@ -268,8 +277,8 @@ def buy_sell():
                     return render_template('buy_sell.html', error='Insufficient stock quantity')
 
                 # Update balance and portfolio table for sell action
-                new_balance = balance + transaction_value
-                cursor.execute('UPDATE portfolio SET balance = %s WHERE username = %s', (new_balance, username))
+                #new_balance = balance + transaction_value
+                #cursor.execute('UPDATE users SET balance = %s WHERE username = %s', (new_balance, username))
                 cursor.execute('UPDATE portfolio SET quantity = quantity - %s WHERE username = %s AND stock = %s',
                                (quantity, username, symbol))
                 conn.commit()
