@@ -1,6 +1,7 @@
 # Import necessary libraries
 from flask import Flask, render_template, request, redirect, url_for, session
 import mysql.connector
+from flask import jsonify
 import requests
 # from stocks import get_stock_data
 
@@ -91,6 +92,17 @@ def fetch_stock_data(symbol):
     else:
         return None
 
+# Function to fetch stock price
+def fetch_current_price(symbol):
+    url = f"https://api.polygon.io/v2/aggs/ticker/{symbol}/range/5/minute/2024-04-29/2024-04-29?adjusted=true&apiKey={API_KEY}"
+    response = requests.get(url)
+    if response.status_code == 200:
+        data = response.json()
+        if 'results' in data and data['results']:
+            return data['results'][0]['c']  # Closing price
+    return None
+
+
 # Route for the stocks page
 @app.route('/stocks', methods=['GET', 'POST'])
 def stocks():
@@ -100,6 +112,25 @@ def stocks():
         return render_template('stocks.html', symbol=symbol, data=data)
     else:
         return render_template('stocks.html')
+
+
+# Route for get stocks symbols
+@app.route('/get-stock-symbols')
+def get_stock_symbols():
+    try:
+        # Replace 'YOUR_API_ENDPOINT' with the actual endpoint of your API
+        response = requests.get('https://api.polygon.io/v3/reference/tickers?active=true&apiKey=onNX6t8vQlxkS8WNPpr1ExYEGNCkiyvl')
+        if response.status_code == 200:
+            data = response.json()
+            symbols = [result['ticker'] for result in data['results']]
+            return jsonify({'symbols': symbols})
+        else:
+            return jsonify({'error': 'Failed to fetch stock symbols from API'}), 500
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+
 
 
 # Route for user registration
@@ -177,15 +208,88 @@ def logout():
     session.pop('username', None)
     return redirect(url_for('login'))
 
+
 # Route for buying and selling stocks
 @app.route('/buy-sell', methods=['GET', 'POST'])
 def buy_sell():
     if 'username' not in session:
         return redirect(url_for('login'))
 
-    # Implement your buy-sell logic here
+    if request.method == 'POST':
+        # Get form data
+        symbol = request.form['stock']
+        quantity = int(request.form['quantity'])
+        action = request.form['action']
+        username = session['username']
 
-    return render_template('buy_sell.html')  # Render the buy-sell page
+        # Connect to the database
+        conn = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="abhi992744",
+            database="tradeplay_credentials"
+        )
+        cursor = conn.cursor()
+
+        try:
+            # Fetch stock price at the specified date
+            stock_price = fetch_current_price(symbol)
+            print(stock_price)
+            if stock_price is None:
+                raise Exception(f"Unable to fetch stock price for symbol {symbol}")
+
+            # Fetch user's balance
+            #cursor.execute('SELECT balance FROM portfolio WHERE username = %s', (username,))
+            #balance = cursor.fetchone()[0]
+
+            # Calculate transaction value
+            transaction_value = quantity * stock_price
+            print(transaction_value)
+            if action == 'buy':
+                # Check if user has sufficient balance
+                #if balance < transaction_value:
+                    #return render_template('buy_sell.html', error='Insufficient balance')
+
+                # Update balance and portfolio table for buy action
+                #new_balance = balance - transaction_value
+                #print(new_balance)
+                print(username)
+                #cursor.execute('UPDATE portfolio SET balance = %s WHERE username = %s', (new_balance, username))
+                cursor.execute('INSERT INTO portfolio (username, stock, quantity, price, total_value) VALUES (%s, %s, %s, %s, %s)',
+                               (username, symbol, quantity, stock_price, transaction_value))
+                conn.commit()
+
+            elif action == 'sell':
+                # Check if user has sufficient stock quantity
+                cursor.execute('SELECT quantity FROM portfolio WHERE username = %s AND stock = %s', (username, symbol))
+                row = cursor.fetchone()
+                if not row or row[0] < quantity:
+                    return render_template('buy_sell.html', error='Insufficient stock quantity')
+
+                # Update balance and portfolio table for sell action
+                new_balance = balance + transaction_value
+                cursor.execute('UPDATE portfolio SET balance = %s WHERE username = %s', (new_balance, username))
+                cursor.execute('UPDATE portfolio SET quantity = quantity - %s WHERE username = %s AND stock = %s',
+                               (quantity, username, symbol))
+                conn.commit()
+
+            return redirect(url_for('portfolio'))
+
+        except Exception as e:
+            # Handle any exceptions
+            conn.rollback()
+            return render_template('buy_sell.html', error=str(e))
+
+        finally:
+            # Close cursor and connection
+            cursor.close()
+            conn.close()
+
+    return render_template('buy_sell.html')
+
+
+
+
 
 # Route for the portfolio page
 @app.route('/portfolio')
@@ -202,11 +306,12 @@ def portfolio():
     )
     cursor = conn.cursor()
     username = session['username']
-    cursor.execute('SELECT * FROM portfolio WHERE username = %s', (username,))
+    cursor.execute('SELECT stock, SUM(quantity) AS total_quantity, AVG(price) AS average_price, SUM(total_value) AS total_value FROM portfolio WHERE username = %s GROUP BY stock', (username,))
     portfolio = cursor.fetchall()
     conn.close()
 
     return render_template('portfolio.html', portfolio=portfolio)
+
 
 
 

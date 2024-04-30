@@ -3,6 +3,16 @@ import requests
 # Replace 'ARDO3QVA3649P4AK' with your actual Alpha Vantage API key (for this session only)
 API_KEY = 'onNX6t8vQlxkS8WNPpr1ExYEGNCkiyvl'
 
+
+def fetch_current_price(symbol):
+    url = f"https://api.polygon.io/v2/aggs/ticker/{symbol}/range/5/minute/2024-04-29/2024-04-29?adjusted=true&apiKey={API_KEY}"
+    response = requests.get(url)
+    if response.status_code == 200:
+        data = response.json()
+        if 'results' in data and data['results']:
+            return data['results'][0]['c']  # Closing price
+    return None
+  
 # Function to fetch stock data
 def fetch_stock_data(symbol):
     url = f"https://api.polygon.io/v2/aggs/ticker/{symbol}/range/5/minute/2024-04-29/2024-04-29?adjusted=true&apiKey={API_KEY}"
@@ -14,7 +24,7 @@ def fetch_stock_data(symbol):
 
 # Example usage (fetching 1-minute intraday data for AAPL)
 symbol = "AAPL"
-data = fetch_stock_data(symbol)
+data = fetch_current_price(symbol)
 
 if data:
   # Access data using the dictionary structure returned by the API
