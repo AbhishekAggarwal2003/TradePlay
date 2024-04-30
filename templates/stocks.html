@@ -11,9 +11,18 @@
 <body>
     {% include 'dashboard.html' %}
     <h1>Real-Time Stock Data</h1>
-    <h1>Stock Data for {{ symbol }}</h1>
+    <form action="{{ url_for('stocks') }}" method="post">
+        <label for="stock_symbol">Select a stock:</label>
+        <select id="stock_symbol" name="stock_symbol">
+            {% for symbol in symbols %}
+                <option value="{{ symbol }}">{{ symbol }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">Show Stock Data</button>
+    </form>
     <hr>
     {% if data %}
+        <h1>Stock Data for {{ symbol }}</h1>
         <table>
             <thead>
                 <tr>

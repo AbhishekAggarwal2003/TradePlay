@@ -83,34 +83,32 @@ def index():
 
 
 # Function to fetch stock data
-def fetch_stock_data(symbol, function="TIME_SERIES_INTRADAY", interval="1min", outputsize="compact", start_date=None, end_date=None):
-    url = f"https://www.alphavantage.co/query?function={function}&symbol={symbol}&apikey={API_KEY}&outputsize={outputsize}"
-    url += f"&interval={interval}"  # Include interval for intraday data
-    if start_date:
-        url += f"&startDate={start_date}"
-    if end_date:
-        url += f"&endDate={end_date}"
-
+def fetch_stock_data(symbol, function="TIME_SERIES_INTRADAY", interval="60min", outputsize="compact"):
+    url = f"https://www.alphavantage.co/query?function={function}&symbol={symbol}&apikey={API_KEY}&outputsize={outputsize}&interval={interval}"
     response = requests.get(url)
-    
     if response.status_code == 200:
         return response.json()
     else:
         print(f"Error: {response.status_code}")
         return None
-    
-    
+
 # Route for the stocks page
-@app.route('/stocks')
+@app.route('/stocks', methods=['GET', 'POST'])
 def stocks():
-    symbol = "AAPL"  # Example symbol
-    data = fetch_stock_data(symbol, interval="60min")
-    print(data)  # Print the data dictionary to inspect its structure
-    
-    if data:
-        return render_template('stocks.html', symbol=symbol, data=data)
-    else:
-        return render_template('stocks.html', error="Failed to fetch data")
+    if request.method == 'POST':
+        # Get the selected stock symbol from the form
+        symbol = request.form['stock_symbol']
+        # Fetch stock data for the selected symbol
+        data = fetch_stock_data(symbol)
+        if data:
+            # Pass the symbol and data to the template
+            return render_template('stocks.html', symbol=symbol, data=data)
+        else:
+            return render_template('stocks.html', error="Failed to fetch stock data")
+
+    # If it's a GET request or if there's an error, render the stocks page without data
+    return render_template('stocks.html', symbols=["AAPL", "GOOGL", "MSFT", "AMZN"])  # Example list of stock symbols
+
 
 
 
