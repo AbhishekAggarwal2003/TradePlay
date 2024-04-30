@@ -1,0 +1,45 @@
+<!-- templates/stocks.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stocks Page</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='stocks.css') }}">
+</head>
+<body>
+    {% include 'dashboard.html' %}
+    <h1>Real-Time Stock Data</h1>
+    <h1>Stock Data for {{ symbol }}</h1>
+    <hr>
+    {% if data %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Open</th>
+                    <th>High</th>
+                    <th>Low</th>
+                    <th>Close</th>
+                    <th>Volume</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for timestamp, values in data['Time Series (60min)'].items() %}
+                    <tr>
+                        <td>{{ timestamp }}</td>
+                        <td>{{ values['1. open'] }}</td>
+                        <td>{{ values['2. high'] }}</td>
+                        <td>{{ values['3. low'] }}</td>
+                        <td>{{ values['4. close'] }}</td>
+                        <td>{{ values['5. volume'] }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Failed to fetch stock data</p>
+    {% endif %}
+</body>
+</html>

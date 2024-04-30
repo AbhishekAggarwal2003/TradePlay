@@ -1,0 +1,38 @@
+<!-- templates/portfolio.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TradePlay - Portfolio</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='portfolio.css') }}">
+</head>
+<body>
+    {% include 'dashboard.html' %}
+
+    <div class="container">
+        <h1>My Portfolio</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>Stock</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Total Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in portfolio %}
+                    <tr>
+                        <td>{{ item.stock }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>{{ item.price }}</td>
+                        <td>{{ item.total_value }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
