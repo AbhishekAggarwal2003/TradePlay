@@ -25,7 +25,8 @@ cursor.execute('''
     CREATE TABLE IF NOT EXISTS users (
         id INT AUTO_INCREMENT PRIMARY KEY,
         username VARCHAR(255) NOT NULL,
-        password VARCHAR(255) NOT NULL
+        password VARCHAR(255) NOT NULL,
+        balance DECIMAL(10,2) NOT NULL DEFAULT 10000.00
     )
 ''')
 
@@ -38,7 +39,7 @@ CREATE TABLE IF NOT EXISTS portfolio (
     quantity INT,
     price DECIMAL(10,2),
     total_value DECIMAL(10,2),
-    balance DECIMAL(10,2) NOT NULL DEFAULT 10000.00
+    action VARCHAR(10)
     )
 ''')
 
@@ -255,8 +256,8 @@ def buy_sell():
                 #print(new_balance)
                 print(username)
                 #cursor.execute('UPDATE portfolio SET balance = %s WHERE username = %s', (new_balance, username))
-                cursor.execute('INSERT INTO portfolio (username, stock, quantity, price, total_value) VALUES (%s, %s, %s, %s, %s)',
-                               (username, symbol, quantity, stock_price, transaction_value))
+                cursor.execute('INSERT INTO portfolio (username, stock, quantity, price, total_value, action) VALUES (%s, %s, %s, %s, %s, %s)',
+                               (username, symbol, quantity, stock_price, transaction_value, action))
                 conn.commit()
 
             elif action == 'sell':
