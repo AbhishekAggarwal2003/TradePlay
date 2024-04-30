@@ -26,7 +26,7 @@ cursor.execute('''
         id INT AUTO_INCREMENT PRIMARY KEY,
         username VARCHAR(255) NOT NULL,
         password VARCHAR(255) NOT NULL,
-        balance DECIMAL(10,2) NOT NULL DEFAULT 10000.00
+        balance DECIMAL(10,3) NOT NULL DEFAULT 10000.000
     )
 ''')
 
@@ -47,6 +47,7 @@ CREATE TABLE IF NOT EXISTS portfolio (
 conn.commit()
 conn.close()
 
+
 # Route for the dashboard
 @app.route('/dashboard')
 def dashboard():
@@ -62,7 +63,7 @@ def dashboard():
             database="tradeplay_credentials"
         )
         cursor = conn.cursor()
-        cursor.execute('SELECT balance FROM portfolio WHERE username = %s', (username,))
+        cursor.execute('SELECT balance FROM users WHERE username = %s', (username,))
         balance = cursor.fetchone()[0]
         conn.close()
         
@@ -70,6 +71,7 @@ def dashboard():
     else:
         # Redirect the user to the login page if not authenticated
         return redirect(url_for('login'))
+
 
 
 # Route for the home page (index page)
@@ -86,7 +88,7 @@ def index():
 
 # Function to fetch stock data
 def fetch_stock_data(symbol):
-    url = f"https://api.polygon.io/v2/aggs/ticker/{symbol}/range/5/minute/2024-04-29/2024-04-29?adjusted=true&apiKey={API_KEY}"
+    url = f"https://api.polygon.io/v2/aggs/ticker/{symbol}/range/5/minute/2024-04-29/2024-04-29?adjusted=true&sort=desc&apiKey={API_KEY}"
     response = requests.get(url)
     if response.status_code == 200:
         return response.json()
@@ -236,16 +238,18 @@ def buy_sell():
                 raise Exception(f"Unable to fetch stock price for symbol {symbol}")
 
             # Fetch user's balance
-            #cursor.execute('SELECT balance FROM users WHERE username = %s', (username,))
-            #balance = cursor.fetchone()[0]
-
+            cursor.execute('SELECT balance FROM users WHERE username = %s', (username,))
+            balance = cursor.fetchone()[0]
+            print(balance)
+            
             # Calculate transaction value
             transaction_value = quantity * stock_price
             print(transaction_value)
+            
             if action == 'buy':
                 # Check if user has sufficient balance
-                #if balance < transaction_value:
-                    #return render_template('buy_sell.html', error='Insufficient balance')
+                if balance < transaction_value:
+                    return render_template('buy_sell.html', error='Insufficient balance')
 
                 # Check if the user already has this share in the portfolio
                 cursor.execute('SELECT * FROM portfolio WHERE username = %s AND stock = %s', (username, symbol))
@@ -259,7 +263,12 @@ def buy_sell():
                     # Insert a new row in the portfolio table
                     cursor.execute('INSERT INTO portfolio (username, stock, quantity, price, total_value, action) VALUES (%s, %s, %s, %s, %s, %s)',
                                    (username, symbol, quantity, stock_price, transaction_value, action))
-
+                    
+                # Fetch user's balance
+                cursor.execute('SELECT balance FROM users WHERE username = %s', (username,))
+                balance = cursor.fetchone()[0]
+                print(balance)
+                
                 # Update user's balance
                 #new_balance = balance - transaction_value
                 #cursor.execute('UPDATE users SET balance = %s WHERE username = %s', (new_balance, username))

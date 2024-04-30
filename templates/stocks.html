@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stocks Page</title>
+    <title>TradePlay - Stocks</title>
 </head>
 <body>
     {% include 'dashboard.html' %}
@@ -13,9 +13,22 @@
     <p>Select a stock to view its data:</p>
     <form action="/stocks" method="post">
         <select name="symbol">
+            <option value="">Select a stock symbol</option>
+            <option value="">Select a stock symbol</option>
             <option value="AAPL">Apple Inc. (AAPL)</option>
             <option value="GOOGL">Alphabet Inc. (GOOGL)</option>
             <option value="MSFT">Microsoft Corporation (MSFT)</option>
+            <option value="AMZN">Meta (formerly Facebook) Inc. (META)</option>
+            <option value="TSLA">Tesla Motors (TSLA)</option>
+            <option value="GS">The Goldman Sachs Group, Inc. (GS)</option>
+            <option value="ORCL">Oracle Corporation</option>
+            <option value="DELL">Dell Inc.</option>
+            <option value="SPX">The S&P 500 Index (SPX)</option>
+            <option value="HPQ">Hewlett-Packard Company (HPQ)</option>
+            <option value="ACN">Accenture Ltd.</option>
+            <option value="TTM">Tata Motors Ltd</option>
+            <option value="TTM">Tata Motors Ltd</option>
+            <option value="TTM">Tata Motors Ltd</option>
             <!-- Add more options as needed -->
         </select>
         <button type="submit">Show Stock Data</button>
