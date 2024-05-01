@@ -3,6 +3,7 @@ from flask import Flask, render_template, request, redirect, url_for, session
 import mysql.connector
 from flask import jsonify
 import requests
+import datetime
 # from stocks import get_stock_data
 
 app = Flask(__name__)
@@ -99,18 +100,23 @@ def index():
         return render_template('index.html')
 
 
-# Function to fetch stock data
 def fetch_stock_data(symbol):
-    url = f"https://api.polygon.io/v2/aggs/ticker/{symbol}/range/5/minute/2024-04-29/2024-04-29?adjusted=true&sort=desc&apiKey={API_KEY}"
+    url = f"https://api.polygon.io/v2/aggs/ticker/{symbol}/range/5/minute/2024-04-30/2024-04-30?adjusted=true&sort=desc&apiKey={API_KEY}"
     response = requests.get(url)
     if response.status_code == 200:
-        return response.json()
-    else:
-        return None
+        data = response.json()
+        if 'results' in data and data['results']:
+            results = data['results']
+            # Iterate over each result and convert timestamp to date and time
+            for result in results:
+                timestamp = result['t'] / 1000  # Convert milliseconds to seconds
+                result['datetime'] = datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
+            return results
+    return None
 
 # Function to fetch stock price
 def fetch_current_price(symbol):
-    url = f"https://api.polygon.io/v2/aggs/ticker/{symbol}/range/5/minute/2024-04-29/2024-04-29?adjusted=true&apiKey={API_KEY}"
+    url = f"https://api.polygon.io/v2/aggs/ticker/{symbol}/range/5/minute/2024-04-29/2024-04-30?adjusted=true&apiKey={API_KEY}"
     response = requests.get(url)
     if response.status_code == 200:
         data = response.json()
