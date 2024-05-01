@@ -94,7 +94,23 @@ def index():
     if 'username' in session:
         # Retrieve user details from the session
         username = session['username']
-        return render_template('index.html', username=username)
+        
+        # Fetch recent transactions from the database
+        conn = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="abhi992744",
+            database="tradeplay_credentials"
+        )
+        cursor = conn.cursor()
+        
+        # Fetch recent transactions
+        cursor.execute('SELECT * FROM transactions WHERE username = %s ORDER BY transaction_time DESC', (username,))
+        recent_transactions = cursor.fetchall()
+        
+        conn.close()
+        
+        return render_template('index.html', username=username, recent_transactions=recent_transactions)
     else:
         # Render the home page template directly
         return render_template('index.html')
@@ -116,7 +132,7 @@ def fetch_stock_data(symbol):
 
 # Function to fetch stock price
 def fetch_current_price(symbol):
-    url = f"https://api.polygon.io/v2/aggs/ticker/{symbol}/range/5/minute/2024-04-29/2024-04-30?adjusted=true&apiKey={API_KEY}"
+    url = f"https://api.polygon.io/v2/aggs/ticker/{symbol}/range/5/minute/2024-04-30/2024-04-30?adjusted=true&sort=desc&apiKey={API_KEY}"
     response = requests.get(url)
     if response.status_code == 200:
         data = response.json()
@@ -307,6 +323,12 @@ def buy_sell():
                                (quantity, username, symbol))
                 conn.commit()
 
+            # Insert transaction data into transactions table
+            cursor.execute('''
+                INSERT INTO transactions (username, stock, quantity, price, total_value, action)
+                VALUES (%s, %s, %s, %s, %s, %s)
+            ''', (username, symbol, quantity, stock_price, transaction_value, action))
+            conn.commit()
             return redirect(url_for('portfolio'))
 
         except Exception as e:
@@ -320,8 +342,6 @@ def buy_sell():
             conn.close()
 
     return render_template('buy_sell.html')
-
-
 
 
 
@@ -347,6 +367,25 @@ def portfolio():
     return render_template('portfolio.html', portfolio=portfolio)
 
 
+@app.route('/transaction-history')
+def transaction_history():
+    if 'username' in session:
+        # Retrieve user's transaction history from the database
+        conn = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="abhi992744",
+            database="tradeplay_credentials"
+        )
+        cursor = conn.cursor()
+        username = session['username']
+        cursor.execute('SELECT * FROM transactions WHERE username = %s ORDER BY transaction_time DESC', (username,))
+        transaction_history = cursor.fetchall()
+        conn.close()
+
+        return render_template('transaction_history.html', transaction_history=transaction_history)
+    else:
+        return redirect(url_for('login'))
 
 
 

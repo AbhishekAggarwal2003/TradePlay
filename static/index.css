@@ -30,10 +30,22 @@ h2 {
 }
 
 p {
-    color: #666;
-    line-height: 1.5;
+    color: #0015ff;
     margin-bottom: 20px;
     padding: 0 20px;
+    text-align: center;
+}
+
+.stock-bar {
+    background-color: #f2f2f2;
+    padding: 10px;
+    overflow-x: auto;
+    white-space: nowrap;
+}
+
+.stock {
+    display: inline-block;
+    margin-right: 20px;
 }
 
 a {

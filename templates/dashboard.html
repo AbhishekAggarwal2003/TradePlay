@@ -20,6 +20,7 @@
                 <li><a href="{{ url_for('stocks', date=current_date) }}">Stocks</a></li>
                 <li><a href="{{ url_for('portfolio') }}">Portfolio</a></li>
                 <li><a href="{{ url_for('buy_sell') }}">Buy/Sell</a></li>
+                <li><a href="{{ url_for('transaction_history') }}">Transactions</a></li>
                 <li><a href="{{ url_for('logout') }}">Logout</a></li>
                 <li><span class="balance">Balance: {{ session['balance'] }}</span></li>
             {% else %}
