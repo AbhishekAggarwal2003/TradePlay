@@ -108,12 +108,22 @@ def index():
         cursor.execute('SELECT * FROM transactions WHERE username = %s ORDER BY transaction_time DESC', (username,))
         recent_transactions = cursor.fetchall()
         
+        # Define the stock symbols you want to display
+        symbols = ["AAPL", "GOOGL", "MSFT", "AMZN"]  # Add more symbols as needed
+        
+        # Fetch current prices for the stock symbols
+        current_prices = {}
+        for symbol in symbols:
+            price = fetch_current_price(symbol)
+            current_prices[symbol] = price
+        
         conn.close()
         
-        return render_template('index.html', username=username, recent_transactions=recent_transactions)
+        return render_template('index.html', username=username, recent_transactions=recent_transactions, symbol=symbol, current_prices=current_prices)
     else:
         # Render the home page template directly
         return render_template('index.html')
+
 
 
 def fetch_stock_data(symbol):

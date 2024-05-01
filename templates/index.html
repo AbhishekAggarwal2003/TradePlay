@@ -13,12 +13,12 @@
 
     {% block content %}
     {% if username %}
-    <div class="stock-bar">
-        <div class="stock">AAPL: $150.25</div>
-        <div class="stock">GOOGL: $2700.50</div>
-        <div class="stock">MSFT: $305.75</div>
-        <!-- Add more stock symbols and prices here -->
-    </div>
+    <h2>Current Prices:</h2>
+    <ul>
+        {% for symbol in symbols %}
+        <li>{{ symbol }}: ${{ current_prices[symbol] }}</li>
+        {% endfor %}
+    </ul>
     <h1>Welcome, {{ username }}!</h1>
     {% else %}
     <h1>Welcome</h1>
@@ -28,37 +28,6 @@
     <p>Our platform offers a user-friendly interface where you can buy and sell virtual stocks, track your portfolio, and analyze stock data. Whether you're a novice investor looking to gain hands-on experience or an experienced trader honing your skills, TradePlay has something for everyone.</p>
     <p>Join our community of traders today and start your virtual trading journey with TradePlay!</p>
 
-    {% if recent_transactions %}
-        <h2>Recent Transactions</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Transaction ID</th>
-                    <th>Stock</th>
-                    <th>Quantity</th>
-                    <th>Price</th>
-                    <th>Total Value</th>
-                    <th>Action</th>
-                    <th>Timestamp</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for transaction in recent_transactions %}
-                    <tr>
-                        <td>{{ transaction[0] }}</td> <!-- Assuming transaction ID is the first column -->
-                        <td>{{ transaction[2] }}</td>
-                        <td>{{ transaction[3] }}</td>
-                        <td>{{ transaction[4] }}</td>
-                        <td>{{ transaction[5] }}</td>
-                        <td>{{ transaction[6] }}</td>
-                        <td>{{ transaction[7] }}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <p>No recent transactions.</p>
-    {% endif %}
     {% endblock %}
 </body>
 </html>
