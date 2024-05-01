@@ -43,6 +43,19 @@ CREATE TABLE IF NOT EXISTS portfolio (
     )
 ''')
 
+# Create transaction table
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS transactions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(255) NOT NULL,
+    stock VARCHAR(255),
+    quantity INT,
+    price DECIMAL(10,2),
+    total_value DECIMAL(10,2),
+    action VARCHAR(10),
+    transaction_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)
+''')
 
 conn.commit()
 conn.close()

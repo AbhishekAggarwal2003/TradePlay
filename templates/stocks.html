@@ -1,5 +1,3 @@
-<!-- templates/stocks.html -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,7 +11,6 @@
     <p>Select a stock to view its data:</p>
     <form action="/stocks" method="post">
         <select name="symbol">
-            <option value="">Select a stock symbol</option>
             <option value="">Select a stock symbol</option>
             <option value="AAPL">Apple Inc. (AAPL)</option>
             <option value="GOOGL">Alphabet Inc. (GOOGL)</option>
@@ -29,10 +26,39 @@
             <option value="TTM">Tata Motors Ltd</option>
             <option value="TTM">Tata Motors Ltd</option>
             <option value="TTM">Tata Motors Ltd</option>
-            <!-- Add more options as needed -->
         </select>
         <button type="submit">Show Stock Data</button>
     </form>
+    <div id="stock-chart"></div>
+
+    <script>
+        {% if data %}
+            // Extract dates and prices from data
+            const dates = {{ data.timestamp }};
+            const prices = {{ data.close }};
+
+            // Create trace for the line chart
+            const trace = {
+                x: dates,
+                y: prices,
+                type: 'scatter',
+                mode: 'lines+markers',
+                marker: { color: 'blue' },
+                line: { shape: 'spline' }
+            };
+
+            // Define layout options
+            const layout = {
+                title: 'Stock Prices',
+                xaxis: { title: 'Date' },
+                yaxis: { title: 'Price' }
+            };
+
+            // Plot the chart
+            Plotly.newPlot('stock-chart', [trace], layout);
+        {% endif %}
+    </script>
+    
     <hr>
     {% if data %}
         <h2>Stock Data for {{ symbol }}</h2>
@@ -60,6 +86,7 @@
                 {% endfor %}
             </tbody>
         </table>
+    
     {% else %}
         <p>No data available.</p>
     {% endif %}
